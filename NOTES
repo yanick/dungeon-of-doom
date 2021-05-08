@@ -1,0 +1,17 @@
+
+Rot.js -- Rogue-like Toolkit
+
+https://ondras.github.io/rot.js/hp/
+
+
+* Why?
+
+- super-low access barrier
+
+- add the basic tools are included
+    - drawing
+    - dungeon creation
+    - lightning
+    - field of vision
+    - path finding
+    - graphical tiles
