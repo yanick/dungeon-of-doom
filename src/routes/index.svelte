@@ -4,19 +4,31 @@
 
   import { randomEmptySpace, createGrid, visitGrid } from './_utils';
 
-  const WIDTH = 78;
+  const WIDTH = 38;
   const HEIGHT = 24;
 
   let view;
   let dungeon;
   let cave = false;
 
-  if (browser)
+  let tiles;
+
+  $: if (browser && tiles) {
     dungeon = new Display({
       width: WIDTH,
       height: HEIGHT,
-      fontSize: 12
+      layout: 'tile',
+      bg: 'transparent',
+      tileWidth: 16,
+      tileHeight: 16,
+      tileSet: tiles,
+      tileMap: {
+        '@': [195, 160],
+        '#': [32, 188],
+        '%': [142, 112]
+      }
     });
+  }
 
   $: if (view && dungeon) view.appendChild(dungeon.getContainer());
 
@@ -130,6 +142,8 @@
     drawDungeon(dungeon, grid);
   };
 </script>
+
+<img bind:this={tiles} src="/tiles.png" style="display: none;" />
 
 <div class="head">
   <h1>Dungeon of Doom</h1>
