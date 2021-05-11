@@ -2,7 +2,7 @@
   import { browser } from '$app/env';
   import { Display, Map } from 'rot-js';
 
-  import { createGrid, visitGrid } from './_utils';
+  import { randomEmptySpace, createGrid, visitGrid } from './_utils';
 
   const WIDTH = 78;
   const HEIGHT = 24;
@@ -20,10 +20,12 @@
 
   $: if (view && dungeon) view.appendChild(dungeon.getContainer());
 
-  const grid = createGrid(WIDTH, HEIGHT, null);
+  let grid;
 
   $: if (dungeon) {
     dungeon.clear();
+
+    grid = createGrid(WIDTH, HEIGHT, null);
 
     let map;
 
@@ -43,6 +45,12 @@
       map = new Map.Digger(WIDTH, HEIGHT);
       map.create(build);
     }
+
+    let hero = randomEmptySpace(grid, '@');
+    dungeon.draw(...hero, '@', 'lightblue');
+
+    let treasure = randomEmptySpace(grid, '%');
+    dungeon.draw(...treasure, '%', 'red');
   }
 </script>
 
