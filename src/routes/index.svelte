@@ -21,8 +21,37 @@
   $: if (view && dungeon) view.appendChild(dungeon.getContainer());
 
   let grid;
+  let hero;
 
-  $: if (dungeon) {
+  const colorFor = (char) =>
+    char === '@'
+      ? 'lightgreen'
+      : char === '%'
+      ? 'red'
+      : char === '#'
+      ? 'grey'
+      : 'black';
+
+  const drawDungeon = (dungeon, grid) => {
+    dungeon.clear();
+
+    visitGrid(grid, (x, y, char) => {
+      dungeon.draw(x, y, char, colorFor(char));
+    });
+
+    const lightPasses = (x, y) => grid[x][y] !== '#';
+
+    const fov = new FOV.PreciseShadowcasting(lightPasses);
+
+    fov.compute(...hero, 10, (x, y) => {
+      dungeon.draw(x, y, grid[x][y], colorFor(grid[x][y]), '#440');
+    });
+  };
+
+  let generated = false;
+  $: generated = cave && !cave;
+
+  $: if (dungeon && !generated) {
     dungeon.clear();
 
     grid = createGrid(WIDTH, HEIGHT, null);
@@ -46,46 +75,56 @@
       map.create(build);
     }
 
-    let hero = randomEmptySpace(grid, '@');
-    dungeon.draw(...hero, '@', 'lightblue');
+    hero = randomEmptySpace(grid, '@');
 
     let treasure = randomEmptySpace(grid, '%');
-    dungeon.draw(...treasure, '%', 'red');
 
-    const lightPasses = (x, y) => grid[x][y] !== '#';
+    drawDungeon(dungeon, grid);
 
-    const fov = new FOV.PreciseShadowcasting(lightPasses);
-
-    const colorFor = (char) =>
-      char === '@'
-        ? 'lightgreen'
-        : char === '%'
-        ? 'red'
-        : char === '#'
-        ? 'grey'
-        : null;
-
-    fov.compute(...hero, 10, (x, y) => {
-      dungeon.draw(x, y, grid[x][y], colorFor(grid[x][y]), '#660');
-    });
+    generated = true;
   }
 
   let input;
   let output = [];
 
+  const dirs = {
+    e: [1, 0],
+    w: [-1, 0],
+    n: [0, -1],
+    s: [0, 1]
+  };
+
   const handleKeyUp = (event) => {
-    if (event.code === 'Enter') {
-      output = [...output, 'yes, my lord'];
+    if (event.code !== 'Enter') return;
+
+    const dir = dirs[input];
+    if (!dir) {
+      output = [...output, 'say what?'];
       input = '';
+      return;
     }
+
+    const newPos = hero.map((x, i) => x + dir[i]);
+
+    if (grid[newPos[0]][newPos[1]] === '#') {
+      output = [...output, 'ow'];
+      input = '';
+      return;
+    }
+
+    output = [...output, 'yes, my lord'];
+    input = '';
+
+    grid[hero[0]][hero[1]] = null;
+    hero = newPos;
+    grid[hero[0]][hero[1]] = '@';
+    drawDungeon(dungeon, grid);
   };
 </script>
 
 <div class="head">
   <h1>Dungeon of Doom</h1>
-  <label>
-    cave <input type="checkbox" bind:checked={cave} />
-  </label>
+  <label> cave <input type="checkbox" bind:checked={cave} /> </label>
 </div>
 
 <main>
