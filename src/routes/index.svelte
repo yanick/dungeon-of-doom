@@ -1,6 +1,6 @@
 <script>
   import { browser } from '$app/env';
-  import { Display } from 'rot-js';
+  import { Display, Map } from 'rot-js';
 
   import { createGrid, visitGrid } from './_utils';
 
@@ -9,6 +9,7 @@
 
   let view;
   let dungeon;
+  let cave = false;
 
   if (browser)
     dungeon = new Display({
@@ -19,12 +20,51 @@
 
   $: if (view && dungeon) view.appendChild(dungeon.getContainer());
 
-  const grid = createGrid(WIDTH, HEIGHT, '#');
+  const grid = createGrid(WIDTH, HEIGHT, null);
 
-  $: if (dungeon)
-    visitGrid(grid, (x, y, cell) => dungeon.draw(x, y, cell, 'grey'));
+  $: if (dungeon) {
+    dungeon.clear();
+
+    let map;
+
+    const build = (x, y, wall) => {
+      if (!wall) return;
+      grid[x][y] = '#';
+      dungeon.draw(x, y, '#', 'grey');
+    };
+
+    if (cave) {
+      map = new Map.Cellular(WIDTH, HEIGHT);
+      map.randomize(0.5);
+      map.create();
+      map.create();
+      map.connect(build);
+    } else {
+      map = new Map.Digger(WIDTH, HEIGHT);
+      map.create(build);
+    }
+  }
 </script>
 
-<h1>Dungeon of Doom</h1>
+<div class="head">
+  <h1>Dungeon of Doom</h1>
+  <label>
+    cave <input type="checkbox" bind:checked={cave} />
+  </label>
+</div>
 
 <div class="dungeon" bind:this={view} />
+
+<style>
+  .head {
+    display: flex;
+    align-items: baseline;
+  }
+  label {
+    display: block;
+  }
+  h1 {
+    margin: 0pt;
+    margin-right: 2em;
+  }
+</style>
