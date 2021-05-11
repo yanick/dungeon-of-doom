@@ -1,6 +1,6 @@
 <script>
   import { browser } from '$app/env';
-  import { Display, Map, FOV } from 'rot-js';
+  import { Display, Map, FOV, Path } from 'rot-js';
 
   import { randomEmptySpace, createGrid, visitGrid } from './_utils';
 
@@ -22,6 +22,7 @@
 
   let grid;
   let hero;
+  let treasure;
 
   const colorFor = (char) =>
     char === '@'
@@ -32,14 +33,14 @@
       ? 'grey'
       : 'black';
 
+  const lightPasses = (x, y) => grid[x][y] !== '#';
+
   const drawDungeon = (dungeon, grid) => {
     dungeon.clear();
 
     visitGrid(grid, (x, y, char) => {
       dungeon.draw(x, y, char, colorFor(char));
     });
-
-    const lightPasses = (x, y) => grid[x][y] !== '#';
 
     const fov = new FOV.PreciseShadowcasting(lightPasses);
 
@@ -77,7 +78,7 @@
 
     hero = randomEmptySpace(grid, '@');
 
-    let treasure = randomEmptySpace(grid, '%');
+    treasure = randomEmptySpace(grid, '%');
 
     drawDungeon(dungeon, grid);
 
@@ -96,6 +97,14 @@
 
   const handleKeyUp = (event) => {
     if (event.code !== 'Enter') return;
+
+    if (input === 'cheat') {
+      const d = new Path.Dijkstra(...treasure, lightPasses);
+
+      d.compute(...hero, (x, y) => {
+        if (!grid[x][y]) dungeon.draw(x, y, '.', 'red');
+      });
+    }
 
     const dir = dirs[input];
     if (!dir) {
