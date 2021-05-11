@@ -56,11 +56,29 @@
 
     const fov = new FOV.PreciseShadowcasting(lightPasses);
 
+    const colorFor = (char) =>
+      char === '@'
+        ? 'lightgreen'
+        : char === '%'
+        ? 'red'
+        : char === '#'
+        ? 'grey'
+        : null;
+
     fov.compute(...hero, 10, (x, y) => {
-      if (grid[x][y]) return;
-      dungeon.draw(x, y, grid[x][y], null, '#660');
+      dungeon.draw(x, y, grid[x][y], colorFor(grid[x][y]), '#660');
     });
   }
+
+  let input;
+  let output = [];
+
+  const handleKeyUp = (event) => {
+    if (event.code === 'Enter') {
+      output = [...output, 'yes, my lord'];
+      input = '';
+    }
+  };
 </script>
 
 <div class="head">
@@ -70,9 +88,35 @@
   </label>
 </div>
 
-<div class="dungeon" bind:this={view} />
+<main>
+  <div class="dungeon" bind:this={view} />
+
+  <div class="output">
+    <h4>output</h4>
+
+    {#each output as line, i (i)}
+      <div>{line}</div>
+    {/each}
+  </div>
+</main>
+
+<input class="input" type="text" bind:value={input} on:keyup={handleKeyUp} />
 
 <style>
+  main {
+    display: flex;
+  }
+  .dungeon {
+    margin-right: 1em;
+  }
+  .input {
+    width: 40em;
+  }
+  .output {
+    max-height: 15em;
+    min-width: 15em;
+    overflow-y: scroll;
+  }
   .head {
     display: flex;
     align-items: baseline;
