@@ -1,6 +1,6 @@
 <script>
   import { browser } from '$app/env';
-  import { Display, Map } from 'rot-js';
+  import { Display, Map, FOV } from 'rot-js';
 
   import { randomEmptySpace, createGrid, visitGrid } from './_utils';
 
@@ -51,6 +51,15 @@
 
     let treasure = randomEmptySpace(grid, '%');
     dungeon.draw(...treasure, '%', 'red');
+
+    const lightPasses = (x, y) => grid[x][y] !== '#';
+
+    const fov = new FOV.PreciseShadowcasting(lightPasses);
+
+    fov.compute(...hero, 10, (x, y) => {
+      if (grid[x][y]) return;
+      dungeon.draw(x, y, grid[x][y], null, '#660');
+    });
   }
 </script>
 
