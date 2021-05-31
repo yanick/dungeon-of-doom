@@ -14,4 +14,5 @@ for my talk. Consequently, the
 commits of main are adding and showcasing features of ROT.js
 one by one. 
 
-
+The tiles I use at the end come from 
+https://0x72.itch.io/dungeontileset-ii?download
